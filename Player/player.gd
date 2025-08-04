@@ -18,6 +18,7 @@ func movement(): #function determining the movement direction of the player
 	velocity = mov.normalized()*movement_speed #to make the body move we apply velocity to it 
 	#so assuming D is pressed velocity = Vector2(1x,0y)&40 = Vector2(40x, 0y)
 	#this means the body rn is moving currently  in +40 pixel/sec with 0 y
-	
 	#cause the character to movea
 	move_and_slide()
+	
+	#
