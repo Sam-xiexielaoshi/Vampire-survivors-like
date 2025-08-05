@@ -36,10 +36,6 @@ func movement(): #function determining the movement direction of the player
 	#this means the body rn is moving currently  in +40 pixel/sec with 0 y
 	#cause the character to movea
 	move_and_slide()
-	
-	#
-
-
 func _on_hurt_box_hurt(damage: Variant) -> void:
 	hp-=damage
 	print(hp)

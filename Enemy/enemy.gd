@@ -20,3 +20,9 @@ func _physics_process(_delta: float) -> void:
 		sprite.flip_h = true
 	elif direction.x < -0.1:
 		sprite.flip_h = false
+
+
+func _on_hurt_box_hurt(damage: Variant) -> void:
+	hp -= damage
+	if hp < 0:
+		queue_free()
