@@ -25,12 +25,12 @@ func _physics_process(_delta: float) -> void:
 	velocity = direction*movement_speed
 	velocity+=knockback
 	move_and_slide()
-	
+
 	if direction.x > 0.1:
 		sprite.flip_h = true
 	elif direction.x < -0.1:
 		sprite.flip_h = false
-		
+
 func death():
 	emit_signal("remove_from_array",self)
 	var enemy_death = death_anim.instantiate()
