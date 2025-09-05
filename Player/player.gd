@@ -5,30 +5,35 @@ var movement_speed = 40.0 #basic speed added
 var hp = 80
 var last_movement = Vector2.UP
 
-@onready var sprite: Sprite2D = $Sprite2D
-@onready var walkTimer: Timer = %walkTimer
-
 #attack
 var iceSpear = preload("res://Player/Attack/ice_spear.tscn")
 var tornado = preload("res://Player/Attack/tornado.tscn")
+var javelin = preload("res://Player/Attack/javalin.tscn")
 
 #aatack nodes
 @onready var iceSpearTimer = get_node("%IceSpearTimer")
 @onready var iceSpearAttackTimer = get_node("%IceSpearAttackTimer")
 @onready var tornadoTimer = get_node("%TornadoTimer")
 @onready var tornadoAttackTimer = get_node("%TornadoAttackTimer")
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var walkTimer: Timer = %walkTimer
+@onready var javelinBase = get_node("%JavelinBase")
 
 #Ice spear
 var icespear_ammo = 0
 var icespear_baseammo =1
 var icespear_attackspeed = 1.5
-var icespear_level =0
+var icespear_level =1
 
 #Tornado
 var tornado_ammo = 0
-var tornado_baseammo =5
+var tornado_baseammo =1
 var tornado_attackspeed = 3
 var tornado_level =1
+
+#javelin
+var javlin_ammo = 1
+var javelin_level = 1
 
 #Enemy related
 var enemy_close = []
@@ -38,7 +43,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:#runs on every 60th of the frame i.e 1/60 sec
 	movement() #custom function 
-	
+
 func movement(): #function determining the movement direction of the player
 	#made a variable x_move determining the movement in x direction by subtracting the action buttons pressed i.e if right and left pressed together then cancel movement etc 
 	var x_mov = Input.get_action_strength("right") - Input.get_action_strength("left")
@@ -77,6 +82,8 @@ func attack():
 		tornadoTimer.wait_time = tornado_attackspeed
 		if tornadoTimer.is_stopped():
 			tornadoTimer.start()
+	if javelin_level>0:
+		spawn_javelin()
 
 func _on_hurt_box_hurt(damage, _angle, _knockback: Variant) -> void:
 	hp-=damage
@@ -118,6 +125,14 @@ func _on_tornado_attack_timer_timeout() -> void:
 		else:
 			tornadoAttackTimer.stop()
 
+func spawn_javelin():
+	var get_javlin_total = javelinBase.get_child_count()
+	var calc_spawns = javlin_ammo-get_javlin_total
+	while calc_spawns>0:
+		var javelin_spawn = javelin.instantiate()
+		javelin_spawn.global_position = global_position
+		javelinBase.add_child(javelin_spawn)
+		calc_spawns-=1
 
 func get_random_target():
 	if enemy_close.size()>0:
