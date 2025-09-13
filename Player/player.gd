@@ -5,6 +5,10 @@ var movement_speed = 40.0 #basic speed added
 var hp = 80
 var last_movement = Vector2.UP
 
+var experience =0
+var experience_level = 1
+var collected_experience = 0
+
 #attack
 var iceSpear = preload("res://Player/Attack/ice_spear.tscn")
 var tornado = preload("res://Player/Attack/tornado.tscn")
@@ -23,13 +27,13 @@ var javelin = preload("res://Player/Attack/javalin.tscn")
 var icespear_ammo = 0
 var icespear_baseammo =1
 var icespear_attackspeed = 1.5
-var icespear_level =1
+var icespear_level =0
 
 #Tornado
 var tornado_ammo = 0
 var tornado_baseammo =1
 var tornado_attackspeed = 3
-var tornado_level =1
+var tornado_level =0
 
 #javelin
 var javlin_ammo = 1
