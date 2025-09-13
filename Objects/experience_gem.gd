@@ -7,7 +7,7 @@ var spr_blue = preload("res://Texture/Items/Gems/Gem_blue.png")
 var spr_red = preload("res://Texture/Items/Gems/Gem_red.png")
 
 var target = null
-var speed = 0
+var speed = -1
 
 @onready var sprite = $Sprite2D
 @onready var collision = $CollisionShape2D
@@ -20,6 +20,13 @@ func _ready() -> void:
 		sprite.texture = spr_blue
 	else:
 		sprite.texture = spr_red
+	# Start invisible & small
+	scale = Vector2(0.2, 0.2)
+	sprite.modulate.a = 0.0  # alpha 0 = invisible
+
+	var tween = get_tree().create_tween()
+	tween.tween_property(sprite, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(sprite, "modulate:a", 1.0, 0.3)
 
 func _physics_process(delta: float) -> void:
 	if target != null:

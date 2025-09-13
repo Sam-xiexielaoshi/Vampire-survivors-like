@@ -40,7 +40,7 @@ func update_javelin():
 			speed = 200.0
 			damage = 10
 			knockback_amount = 100
-			paths = 1
+			paths = 2
 			attack_size = 1.0
 			attack_speed = 4.0
 	scale = Vector2(1.0,1.0)*attack_size
