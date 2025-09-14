@@ -20,14 +20,7 @@ func _ready() -> void:
 		sprite.texture = spr_blue
 	else:
 		sprite.texture = spr_red
-	# Start invisible & small
-	scale = Vector2(0.2, 0.2)
-	sprite.modulate.a = 0.0  # alpha 0 = invisible
-
-	var tween = get_tree().create_tween()
-	tween.tween_property(sprite, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(sprite, "modulate:a", 1.0, 0.3)
-
+	
 func _physics_process(delta: float) -> void:
 	if target != null:
 		global_position = global_position.move_toward(target.global_position, speed)
