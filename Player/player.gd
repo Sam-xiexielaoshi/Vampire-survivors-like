@@ -3,6 +3,7 @@ extends CharacterBody2D
 
 var movement_speed = 40.0 #basic speed added 
 var hp = 80
+var maxhp =80
 var last_movement = Vector2.UP
 
 var experience =0
@@ -25,19 +26,19 @@ var javelin = preload("res://Player/Attack/javalin.tscn")
 
 #Ice spear
 var icespear_ammo = 0
-var icespear_baseammo =1
+var icespear_baseammo =0
 var icespear_attackspeed = 1.5
 var icespear_level =0
 
 #Tornado
 var tornado_ammo = 0
-var tornado_baseammo =1
+var tornado_baseammo =0
 var tornado_attackspeed = 3
 var tornado_level =0
 
 #javelin
-var javlin_ammo = 1
-var javelin_level = 1
+var javelin_ammo = 0
+var javelin_level =0
 
 #Enemy related
 var enemy_close = []
@@ -50,7 +51,17 @@ var enemy_close = []
 @onready var sndLevelUp = get_node("%snd_levelUp")
 @onready var itemOptions = preload("res://Utility/item_option.tscn")
 
+#upgrades
+var collected_upgrades = []
+var upgrade_options = []
+var armor =0
+var speed = 0
+var spell_cooldown = 0
+var spell_size =0
+var additional_attacks=0
+
 func _ready() -> void:
+	upgrade_character("icespear1")
 	attack()
 	set_expBar(experience, calculate_experiencecap())
 	
@@ -89,23 +100,23 @@ func movement(): #function determining the movement direction of the player
 
 func attack():
 	if icespear_level>0:
-		iceSpearTimer.wait_time = icespear_attackspeed
+		iceSpearTimer.wait_time = icespear_attackspeed * (1-spell_cooldown)
 		if iceSpearTimer.is_stopped():
 			iceSpearTimer.start()
 	if tornado_level>0:
-		tornadoTimer.wait_time = tornado_attackspeed
+		tornadoTimer.wait_time = tornado_attackspeed* (1-spell_cooldown)
 		if tornadoTimer.is_stopped():
 			tornadoTimer.start()
 	if javelin_level>0:
 		spawn_javelin()
 
 func _on_hurt_box_hurt(damage, _angle, _knockback: Variant) -> void:
-	hp-=damage
+	hp-=clamp(damage-armor, 1.0, 999.0)
 	print(hp)
 
 
 func _on_ice_spear_timer_timeout() -> void:
-	icespear_ammo += icespear_baseammo
+	icespear_ammo += icespear_baseammo + additional_attacks
 	iceSpearAttackTimer.start()
 
 
@@ -123,7 +134,7 @@ func _on_ice_spear_attack_timer_timeout() -> void:
 			iceSpearAttackTimer.stop()
 
 func _on_tornado_timer_timeout() -> void:
-	tornado_ammo += tornado_baseammo
+	tornado_ammo += tornado_baseammo+ additional_attacks
 	tornadoAttackTimer.start()
 
 func _on_tornado_attack_timer_timeout() -> void:
@@ -141,12 +152,17 @@ func _on_tornado_attack_timer_timeout() -> void:
 
 func spawn_javelin():
 	var get_javlin_total = javelinBase.get_child_count()
-	var calc_spawns = javlin_ammo-get_javlin_total
+	var calc_spawns = (javelin_ammo+ additional_attacks)-get_javlin_total
 	while calc_spawns>0:
 		var javelin_spawn = javelin.instantiate()
 		javelin_spawn.global_position = global_position
 		javelinBase.add_child(javelin_spawn)
 		calc_spawns-=1
+	#update javalin 
+	var get_javelins = javelinBase.get_children()
+	for i in get_javelins:
+		if i.has_method("update_javelin"):
+			i.update_javelin()
 
 func get_random_target():
 	if enemy_close.size()>0:
@@ -213,16 +229,90 @@ func levelup():
 	var optionsmax = 3
 	while options<optionsmax:
 		var option_choice=itemOptions.instantiate()
+		option_choice.item = get_random_item()
 		upgradeOptions.add_child(option_choice)
 		options+=1
 	get_tree().paused=true
 
 func upgrade_character(upgrade):
+	match upgrade:
+		"icespear1":
+			icespear_level = 1
+			icespear_baseammo += 1
+		"icespear2":
+			icespear_level = 2
+			icespear_baseammo += 1
+		"icespear3":
+			icespear_level = 3
+		"icespear4":
+			icespear_level = 4
+			icespear_baseammo += 2
+		"tornado1":
+			tornado_level = 1
+			tornado_baseammo += 1
+		"tornado2":
+			tornado_level = 2
+			tornado_baseammo += 1
+		"tornado3":
+			tornado_level = 3
+			tornado_attackspeed -= 0.5
+		"tornado4":
+			tornado_level = 4
+			tornado_baseammo += 1
+		"javelin1":
+			javelin_level = 1
+			javelin_ammo = 1
+		"javelin2":
+			javelin_level = 2
+		"javelin3":
+			javelin_level = 3
+		"javelin4":
+			javelin_level = 4
+		"armor1","armor2","armor3","armor4":
+			armor += 1
+		"speed1","speed2","speed3","speed4":
+			movement_speed += 20.0
+		"tome1","tome2","tome3","tome4":
+			spell_size += 0.10
+		"scroll1","scroll2","scroll3","scroll4":
+			spell_cooldown += 0.05
+		"ring1","ring2":
+			additional_attacks += 1
+		"food":
+			hp += 20
+			hp = clamp(hp,0,maxhp)
+	attack()
 	var option_childer = upgradeOptions.get_children()
 	for i in option_childer:
 		i.queue_free()
+	upgrade_options.clear()
+	collected_upgrades.append(upgrade)
 	levelPanel.visible = false
 	levelPanel.position = Vector2(800, 50)
 	get_tree().paused=false
 	calculate_experience(0)
-	
+
+func get_random_item():
+	var dbList = []
+	for i in UpgradeDb.UPGRADES:
+		if i in collected_upgrades: #find already collected upgrafdes
+			pass
+		elif i in upgrade_options: #if the upgrade is already an option already
+			pass
+		elif UpgradeDb.UPGRADES[i]["type"]=="item":#dont pick foods
+			pass
+		elif UpgradeDb.UPGRADES[i]["prerequisite"].size()>0:#check for prerequisites
+			var to_add = true
+			for n in UpgradeDb.UPGRADES[i]["prerequisite"]:
+				if not n in collected_upgrades:
+					to_add = false
+			if to_add:
+				dbList.append(i)
+		else:
+			dbList.append(i)
+	if dbList.size()>0:
+		var randomitem = dbList.pick_random()
+		upgrade_options.append(randomitem)
+		return randomitem
+	else:
+		return null;
